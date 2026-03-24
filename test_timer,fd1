@@ -15,6 +15,7 @@ PRINT
 
 REM Test 1: Timer_ReturnNumber
 REM Standard SWI - error would raise BASIC error
+REM Output: R0 = number of timers
 PRINT "Test 1: Timer_ReturnNumber"
 SYS "Timer_ReturnNumber", 0 TO num_timers%
 PRINT "  Number of timers available: ";num_timers%
@@ -24,8 +25,9 @@ PRINT
 
 REM Test 2: Timer_Claim with valid timer
 REM Standard SWI - error would raise BASIC error
+REM Output: R2 = timer rate
 PRINT "Test 2: Timer_Claim (valid timer)"
-SYS "Timer_Claim", 0, 0, 1000, 0 TO rate%
+SYS "Timer_Claim", 0, 0, 1000, 0 TO ,,rate%
 PRINT "  Timer 0 claimed, rate: ";rate%
 IF rate% = 0 THEN PRINT "  FAILED: Expected non-zero rate":END
 PRINT "  PASSED"
@@ -35,7 +37,7 @@ REM Test 3: Timer_Claim with already claimed timer (should fail)
 REM Use XSWI since we're explicitly checking for the error
 PRINT "Test 3: Timer_Claim (already claimed - should fail)"
 test_passed% = FALSE
-SYS "XTimer_Claim", 0, 0, 1000, 0 TO r0%;flags%
+SYS "XTimer_Claim", 0, 0, 1000, 0 TO r0%,r1%,r2%;flags%
 IF flags% AND 1 THEN
   err_num% = r0%!0
   IF err_num% = ERR_ALREADY_CLAIMED% THEN
@@ -54,7 +56,7 @@ REM Test 4: Timer_Claim with out of range timer (should fail)
 REM Use XSWI since we're explicitly checking for the error
 PRINT "Test 4: Timer_Claim (out of range - should fail)"
 test_passed% = FALSE
-SYS "XTimer_Claim", 0, 99, 1000, 0 TO r0%;flags%
+SYS "XTimer_Claim", 0, 99, 1000, 0 TO r0%,r1%,r2%;flags%
 IF flags% AND 1 THEN
   err_num% = r0%!0
   IF err_num% = ERR_OUT_OF_RANGE% THEN
@@ -71,8 +73,9 @@ PRINT
 
 REM Test 5: Timer_SetRate
 REM Standard SWI - error would raise BASIC error
+REM Output: R2 = timer rate
 PRINT "Test 5: Timer_SetRate"
-SYS "Timer_SetRate", 0, 0, 2000000 TO new_rate%
+SYS "Timer_SetRate", 0, 0, 2000000 TO ,,new_rate%
 PRINT "  Timer 0 rate set to: ";new_rate%
 IF new_rate% <> 2000000 THEN PRINT "  FAILED: Expected 2000000":END
 PRINT "  PASSED"
@@ -80,8 +83,9 @@ PRINT
 
 REM Test 6: Timer_Convert
 REM Standard SWI - error would raise BASIC error
+REM Output: R2 = converted value
 PRINT "Test 6: Timer_Convert"
-SYS "Timer_Convert", 0, 0, 5000 TO converted%
+SYS "Timer_Convert", 0, 0, 5000 TO ,,converted%
 PRINT "  Converted value: ";converted%
 IF converted% <> 5000 THEN PRINT "  FAILED: Expected 5000":END
 PRINT "  PASSED"
@@ -89,6 +93,7 @@ PRINT
 
 REM Test 7: Timer_Release
 REM Standard SWI - error would raise BASIC error
+REM Output: None
 PRINT "Test 7: Timer_Release"
 SYS "Timer_Release", 0, 0
 PRINT "  Timer 0 released"
@@ -135,10 +140,11 @@ PRINT
 
 REM Test 10: Claim multiple timers
 REM Standard SWI - error would raise BASIC error
+REM Output: R2 = timer rate
 PRINT "Test 10: Claim multiple timers"
 all_claimed% = TRUE
 FOR timer% = 0 TO num_timers% - 1
-  SYS "Timer_Claim", 0, timer%, 1000, 0 TO rate%
+  SYS "Timer_Claim", 0, timer%, 1000, 0 TO ,,rate%
   IF rate% = 0 THEN
     all_claimed% = FALSE
     PRINT "  FAILED on timer ";timer%
