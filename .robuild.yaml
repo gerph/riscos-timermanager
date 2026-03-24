@@ -52,7 +52,7 @@ jobs:
       # Tests - loading to check that it starts up
       - echo
       - echo *** Load the module ***
-      - RMLoad rm32.timer
+      - RMLoad rm32.Timer
 
       # Insert any testing here...
       #- echo
@@ -61,7 +61,7 @@ jobs:
 
       - echo
       - echo *** Kill the module ***
-      - RMKill timer
+      - RMKill TimerManager
 
       # Construct the artifacts to release
       - echo *** Copy artifacts ***
