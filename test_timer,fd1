@@ -10,6 +10,9 @@ ERR_NOT_CLAIMED% = &842
 ERR_INVALID_FLAGS% = &843
 ERR_RESERVED_FLAGS% = &844
 
+REM SWI base for Timer module
+Timer_Base% = &58B80
+
 PRINT "Timer Module Test Program"
 PRINT "========================="
 PRINT

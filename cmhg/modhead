@@ -6,7 +6,7 @@ title-string: Timer
 
 help-string: Timer Module_MajorVersion_CMHG
 
-swi-chunk-base-number: &C09C0
+swi-chunk-base-number: &58B80
 
 error-base: &840
 
