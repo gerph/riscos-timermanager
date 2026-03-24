@@ -55,10 +55,10 @@ static _kernel_oserror *swi_timer_return_number(_kernel_swi_regs *r)
 
     num_timers = hardware_return_number();
 
-    /* For XSWI: R0 holds flags (0 on success), result in R2 */
-    r->r[0] = 0;
+    /* Return result in R0 (same for both standard and XSWI) */
+    r->r[0] = num_timers;
     r->r[1] = 0;
-    r->r[2] = num_timers;
+    r->r[2] = 0;
     r->r[3] = 0;
 
     return (_kernel_oserror *)0;
@@ -92,10 +92,10 @@ static _kernel_oserror *swi_timer_claim(_kernel_swi_regs *r)
         return err;
     }
 
-    /* For XSWI: R0 holds flags (0 on success), result in R2 */
-    r->r[0] = 0;
+    /* Return rate in R0 (same for both standard and XSWI) */
+    r->r[0] = rate_out;
     r->r[1] = 0;
-    r->r[2] = rate_out;
+    r->r[2] = 0;
     r->r[3] = 0;
 
     return (_kernel_oserror *)0;
@@ -157,9 +157,10 @@ static _kernel_oserror *swi_timer_setrate(_kernel_swi_regs *r)
         return err;
     }
 
-    r->r[0] = 0;
+    /* Return rate in R0 (same for both standard and XSWI) */
+    r->r[0] = rate_out;
     r->r[1] = 0;
-    r->r[2] = rate_out;
+    r->r[2] = 0;
     r->r[3] = 0;
 
     return (_kernel_oserror *)0;
@@ -190,9 +191,10 @@ static _kernel_oserror *swi_timer_convert(_kernel_swi_regs *r)
         return err;
     }
 
-    r->r[0] = 0;
+    /* Return result in R0 (same for both standard and XSWI) */
+    r->r[0] = result;
     r->r[1] = 0;
-    r->r[2] = result;
+    r->r[2] = 0;
     r->r[3] = 0;
 
     return (_kernel_oserror *)0;
