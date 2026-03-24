@@ -6,6 +6,7 @@
 
 #include "kernel.h"
 #include <stddef.h>
+#include "modhead.h"
 
 /* Number of hardware timers available (stub value) */
 #define NUM_TIMERS 4
@@ -24,11 +25,6 @@ typedef struct {
 
 /* Timer state array */
 static timer_state_t timers[NUM_TIMERS];
-
-/* Error block storage */
-static _kernel_oserror err_out_of_range = {1, "Timer number out of range"};
-static _kernel_oserror err_already_claimed = {2, "Timer already claimed"};
-static _kernel_oserror err_not_claimed = {3, "Timer not claimed"};
 
 /***************************************************************************
  * Function:     hardware_init
@@ -85,11 +81,11 @@ _kernel_oserror *hardware_claim(int timer_num, int flags, int value,
                                  int *rate_out)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return &err_out_of_range;
+        return Err_OutOfRange;
     }
 
     if (timers[timer_num].claimed) {
-        return &err_already_claimed;
+        return Err_AlreadyClaimed;
     }
 
     timers[timer_num].claimed = TIMER_CLAIMED;
@@ -114,11 +110,11 @@ _kernel_oserror *hardware_claim(int timer_num, int flags, int value,
 _kernel_oserror *hardware_release(int timer_num)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return &err_out_of_range;
+        return Err_OutOfRange;
     }
 
     if (!timers[timer_num].claimed) {
-        return &err_not_claimed;
+        return Err_NotClaimed;
     }
 
     timers[timer_num].claimed = 0;
@@ -141,11 +137,11 @@ _kernel_oserror *hardware_set_rate(int timer_num, int flags, int value,
                                     int *rate_out)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return &err_out_of_range;
+        return Err_OutOfRange;
     }
 
     if (!timers[timer_num].claimed) {
-        return &err_not_claimed;
+        return Err_NotClaimed;
     }
 
     /* Stub: just store the value and return it */
@@ -171,7 +167,7 @@ _kernel_oserror *hardware_convert(int timer_num, int flags, int value,
                                    int *result)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return &err_out_of_range;
+        return Err_OutOfRange;
     }
 
     /* Stub: return value unchanged */

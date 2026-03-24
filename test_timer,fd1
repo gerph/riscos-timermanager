@@ -3,11 +3,12 @@ REM Test program for Timer module
 REM This tests all the Timer SWIs
 ON ERROR ERROR EXT ERR, REPORT$ + " at line " + STR$(ERL/10)
 
-REM Error codes
-ERR_INVALID_FLAGS% = 100
-ERR_OUT_OF_RANGE% = 1
-ERR_ALREADY_CLAIMED% = 2
-ERR_NOT_CLAIMED% = 3
+REM Error codes (CMHG error base &840)
+ERR_OUT_OF_RANGE% = &840
+ERR_ALREADY_CLAIMED% = &841
+ERR_NOT_CLAIMED% = &842
+ERR_INVALID_FLAGS% = &843
+ERR_RESERVED_FLAGS% = &844
 
 PRINT "Timer Module Test Program"
 PRINT "========================="

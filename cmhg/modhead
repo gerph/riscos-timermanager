@@ -8,6 +8,15 @@ help-string: Timer Module_MajorVersion_CMHG
 
 swi-chunk-base-number: &C09C0
 
+error-base: &840
+
+error-identifiers: Err_OutOfRange("Timer number out of range"),
+                  Err_AlreadyClaimed("Timer already claimed"),
+                  Err_NotClaimed("Timer not claimed"),
+                  Err_InvalidFlags("Invalid flags"),
+                  Err_ReservedFlags("Reserved flags must be zero"),
+                  Err_UnknownSWI("Unknown SWI")
+
 initialisation-code: Mod_Init
 
 finalisation-code: Mod_Final
