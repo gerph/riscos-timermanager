@@ -5,6 +5,7 @@
  ******************************************************************/
 
 #include "kernel.h"
+#include <stddef.h>
 
 /* Number of hardware timers available (stub value) */
 #define NUM_TIMERS 4
@@ -44,7 +45,7 @@ _kernel_oserror *hardware_init(void)
         timers[i].callback = (void (*)(int))0;
         timers[i].callback_arg = 0;
     }
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 /***************************************************************************
@@ -55,7 +56,7 @@ _kernel_oserror *hardware_init(void)
 _kernel_oserror *hardware_final(void)
 {
     /* Nothing to do for stub */
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 /***************************************************************************
@@ -101,7 +102,7 @@ _kernel_oserror *hardware_claim(int timer_num, int flags, int value,
         *rate_out = timers[timer_num].rate;
     }
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 /***************************************************************************
@@ -124,7 +125,7 @@ _kernel_oserror *hardware_release(int timer_num)
     timers[timer_num].callback = (void (*)(int))0;
     timers[timer_num].callback_arg = 0;
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 /***************************************************************************
@@ -154,7 +155,7 @@ _kernel_oserror *hardware_set_rate(int timer_num, int flags, int value,
         *rate_out = value;
     }
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 /***************************************************************************
@@ -178,5 +179,5 @@ _kernel_oserror *hardware_convert(int timer_num, int flags, int value,
         *result = value;
     }
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }

@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
 
 #include "kernel.h"
 #include "modhead.h"
@@ -61,7 +62,7 @@ static _kernel_oserror *swi_timer_return_number(_kernel_swi_regs *r)
     r->r[2] = 0;
     r->r[3] = 0;
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 
@@ -98,7 +99,7 @@ static _kernel_oserror *swi_timer_claim(_kernel_swi_regs *r)
     r->r[2] = rate_out;
     r->r[3] = 0;
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 
@@ -129,7 +130,7 @@ static _kernel_oserror *swi_timer_release(_kernel_swi_regs *r)
     r->r[2] = 0;
     r->r[3] = 0;
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 
@@ -163,7 +164,7 @@ static _kernel_oserror *swi_timer_setrate(_kernel_swi_regs *r)
     r->r[2] = rate_out;
     r->r[3] = 0;
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 
@@ -197,7 +198,7 @@ static _kernel_oserror *swi_timer_convert(_kernel_swi_regs *r)
     r->r[2] = result;
     r->r[3] = 0;
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 
@@ -239,7 +240,7 @@ _kernel_oserror *Mod_Init(const char *tail, int podule_base, void *pw)
         return err;
     }
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
 
 
@@ -258,5 +259,5 @@ _kernel_oserror *Mod_Final(int fatal, int podule_base, void *pw)
         return err;
     }
 
-    return (_kernel_oserror *)0;
+    return NULL;
 }
