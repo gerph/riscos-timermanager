@@ -56,11 +56,8 @@ static _kernel_oserror *swi_timer_return_number(_kernel_swi_regs *r)
 
     num_timers = hardware_return_number();
 
-    /* Return result in R0 (same for both standard and XSWI) */
+    /* Output: R0 = number of timers */
     r->r[0] = num_timers;
-    r->r[1] = 0;
-    r->r[2] = 0;
-    r->r[3] = 0;
 
     return NULL;
 }
@@ -93,11 +90,8 @@ static _kernel_oserror *swi_timer_claim(_kernel_swi_regs *r)
         return err;
     }
 
-    /* Return rate in R2 as per documentation */
-    r->r[0] = 0;
-    r->r[1] = 0;
+    /* Output: R2 = timer rate */
     r->r[2] = rate_out;
-    r->r[3] = 0;
 
     return NULL;
 }
@@ -125,11 +119,7 @@ static _kernel_oserror *swi_timer_release(_kernel_swi_regs *r)
         return err;
     }
 
-    r->r[0] = 0;
-    r->r[1] = 0;
-    r->r[2] = 0;
-    r->r[3] = 0;
-
+    /* No output registers */
     return NULL;
 }
 
@@ -158,11 +148,8 @@ static _kernel_oserror *swi_timer_setrate(_kernel_swi_regs *r)
         return err;
     }
 
-    /* Return rate in R2 as per documentation */
-    r->r[0] = 0;
-    r->r[1] = 0;
+    /* Output: R2 = timer rate */
     r->r[2] = rate_out;
-    r->r[3] = 0;
 
     return NULL;
 }
@@ -192,11 +179,8 @@ static _kernel_oserror *swi_timer_convert(_kernel_swi_regs *r)
         return err;
     }
 
-    /* Return result in R2 as per documentation */
-    r->r[0] = 0;
-    r->r[1] = 0;
+    /* Output: R2 = converted value */
     r->r[2] = result;
-    r->r[3] = 0;
 
     return NULL;
 }
