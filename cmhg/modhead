@@ -1,0 +1,17 @@
+; CMHG module header for Timer module
+
+#include "VersionNum"
+
+title-string: Timer
+
+help-string: Timer Module_MajorVersion_CMHG
+
+swi-chunk-base-number: &C09C0
+
+initialisation-code: Mod_Init
+
+finalisation-code: Mod_Final
+
+swi-handler-code: Mod_Handler
+
+swi-decoding-table: Timer ReturnNumber Claim Release SetRate Convert

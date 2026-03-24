@@ -1,0 +1,260 @@
+/*******************************************************************
+ * File:        module
+ * Purpose:     Timer module interface
+ * Author:      Charles Ferguson
+ ******************************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "kernel.h"
+#include "modhead.h"
+
+/* Hardware interface functions */
+extern _kernel_oserror *hardware_init(void);
+extern _kernel_oserror *hardware_final(void);
+extern int hardware_return_number(void);
+extern _kernel_oserror *hardware_claim(int timer_num, int flags, int value,
+                                        void (*callback)(int), int cb_arg,
+                                        int *rate_out);
+extern _kernel_oserror *hardware_release(int timer_num);
+extern _kernel_oserror *hardware_set_rate(int timer_num, int flags, int value,
+                                           int *rate_out);
+extern _kernel_oserror *hardware_convert(int timer_num, int flags, int value,
+                                          int *result);
+
+#define DEBUG
+
+#ifdef DEBUG
+#define dprintf if (0) printf
+#else
+#define dprintf if (0) printf
+#endif
+
+/* Error blocks */
+static _kernel_oserror err_invalid_flags = {100, "Invalid flags"};
+static _kernel_oserror err_reserved_flags = {101, "Reserved flags must be zero"};
+static _kernel_oserror err_unknown_swi = {102, "Unknown SWI"};
+
+
+/***************************************************************************
+ * SWI:          TIMER_RETURNNUMBER
+ * Description:  Return the number of timers available
+ **************************************************************************/
+static _kernel_oserror *swi_timer_return_number(_kernel_swi_regs *r)
+{
+    int num_timers;
+    int flags = r->r[0];
+
+    dprintf("TIMER_RETURNNUMBER called\n");
+
+    /* Validate flags */
+    if (flags != 0) {
+        return &err_invalid_flags;
+    }
+
+    num_timers = hardware_return_number();
+
+    /* For XSWI: R0 holds flags (0 on success), result in R2 */
+    r->r[0] = 0;
+    r->r[1] = 0;
+    r->r[2] = num_timers;
+    r->r[3] = 0;
+
+    return (_kernel_oserror *)0;
+}
+
+
+/***************************************************************************
+ * SWI:          TIMER_CLAIM
+ * Description:  Claim a timer for use
+ **************************************************************************/
+static _kernel_oserror *swi_timer_claim(_kernel_swi_regs *r)
+{
+    int flags = r->r[0];
+    int timer_num = r->r[1];
+    int value = r->r[2];
+    void (*callback)(int) = (void (*)(int))r->r[3];
+    int r4 = 0; /* Would be passed in real implementation */
+    int rate_out;
+    _kernel_oserror *err;
+
+    dprintf("TIMER_CLAIM called: timer=%d, flags=%d, value=%d\n",
+            timer_num, flags, value);
+
+    /* Validate reserved bits */
+    if ((flags & 0xFFFF0000) != 0) {
+        return &err_reserved_flags;
+    }
+
+    err = hardware_claim(timer_num, flags, value, callback, r4, &rate_out);
+    if (err) {
+        return err;
+    }
+
+    /* For XSWI: R0 holds flags (0 on success), result in R2 */
+    r->r[0] = 0;
+    r->r[1] = 0;
+    r->r[2] = rate_out;
+    r->r[3] = 0;
+
+    return (_kernel_oserror *)0;
+}
+
+
+/***************************************************************************
+ * SWI:          TIMER_RELEASE
+ * Description:  Release a claimed timer
+ **************************************************************************/
+static _kernel_oserror *swi_timer_release(_kernel_swi_regs *r)
+{
+    int flags = r->r[0];
+    int timer_num = r->r[1];
+    _kernel_oserror *err;
+
+    dprintf("TIMER_RELEASE called: timer=%d\n", timer_num);
+
+    /* Validate flags */
+    if (flags != 0) {
+        return &err_invalid_flags;
+    }
+
+    err = hardware_release(timer_num);
+    if (err) {
+        return err;
+    }
+
+    r->r[0] = 0;
+    r->r[1] = 0;
+    r->r[2] = 0;
+    r->r[3] = 0;
+
+    return (_kernel_oserror *)0;
+}
+
+
+/***************************************************************************
+ * SWI:          TIMER_SETRATE
+ * Description:  Set the timer rate
+ **************************************************************************/
+static _kernel_oserror *swi_timer_setrate(_kernel_swi_regs *r)
+{
+    int flags = r->r[0];
+    int timer_num = r->r[1];
+    int value = r->r[2];
+    int rate_out;
+    _kernel_oserror *err;
+
+    dprintf("TIMER_SETRATE called: timer=%d, value=%d\n", timer_num, value);
+
+    /* Validate reserved bits */
+    if ((flags & 0xFFFF0000) != 0) {
+        return &err_reserved_flags;
+    }
+
+    err = hardware_set_rate(timer_num, flags, value, &rate_out);
+    if (err) {
+        return err;
+    }
+
+    r->r[0] = 0;
+    r->r[1] = 0;
+    r->r[2] = rate_out;
+    r->r[3] = 0;
+
+    return (_kernel_oserror *)0;
+}
+
+
+/***************************************************************************
+ * SWI:          TIMER_CONVERT
+ * Description:  Convert a timer value between formats
+ **************************************************************************/
+static _kernel_oserror *swi_timer_convert(_kernel_swi_regs *r)
+{
+    int flags = r->r[0];
+    int timer_num = r->r[1];
+    int value = r->r[2];
+    int result;
+    _kernel_oserror *err;
+
+    dprintf("TIMER_CONVERT called: timer=%d, value=%d\n", timer_num, value);
+
+    /* Validate reserved bits */
+    if ((flags & 0xFFFF0000) != 0) {
+        return &err_reserved_flags;
+    }
+
+    err = hardware_convert(timer_num, flags, value, &result);
+    if (err) {
+        return err;
+    }
+
+    r->r[0] = 0;
+    r->r[1] = 0;
+    r->r[2] = result;
+    r->r[3] = 0;
+
+    return (_kernel_oserror *)0;
+}
+
+
+/***************************************************************************
+ * Function:     Mod_Handler
+ * Description:  Main SWI dispatch function
+ **************************************************************************/
+_kernel_oserror *Mod_Handler(int swi, _kernel_swi_regs *r, void *pw)
+{
+    switch (swi) {
+    case 0x00:
+        return swi_timer_return_number(r);
+    case 0x01:
+        return swi_timer_claim(r);
+    case 0x02:
+        return swi_timer_release(r);
+    case 0x03:
+        return swi_timer_setrate(r);
+    case 0x04:
+        return swi_timer_convert(r);
+    default:
+        return &err_unknown_swi;
+    }
+}
+
+
+/***************************************************************************
+ * Function:     Mod_Init
+ * Description:  Initialise the module
+ **************************************************************************/
+_kernel_oserror *Mod_Init(const char *tail, int podule_base, void *pw)
+{
+    _kernel_oserror *err;
+
+    dprintf("Module timer initialised\n");
+
+    err = hardware_init();
+    if (err) {
+        return err;
+    }
+
+    return (_kernel_oserror *)0;
+}
+
+
+/***************************************************************************
+ * Function:     Mod_Final
+ * Description:  Finalise the module
+ **************************************************************************/
+_kernel_oserror *Mod_Final(int fatal, int podule_base, void *pw)
+{
+    _kernel_oserror *err;
+
+    dprintf("Module timer dying\n");
+
+    err = hardware_final();
+    if (err) {
+        return err;
+    }
+
+    return (_kernel_oserror *)0;
+}

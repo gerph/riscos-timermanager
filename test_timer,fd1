@@ -1,0 +1,164 @@
+REM >test_timer
+REM Test program for Timer module
+REM This tests all the Timer SWIs
+ON ERROR ERROR EXT ERR, REPORT$ + " at line " + STR$(ERL/10)
+
+REM SWI base for Timer module
+Timer_Base% = &C09C0
+
+REM Error codes
+ERR_INVALID_FLAGS% = 100
+ERR_RESERVED_FLAGS% = 101
+ERR_UNKNOWN_SWI% = 102
+ERR_OUT_OF_RANGE% = 1
+ERR_ALREADY_CLAIMED% = 2
+ERR_NOT_CLAIMED% = 3
+
+PRINT "Timer Module Test Program"
+PRINT "========================="
+PRINT
+
+REM Test 1: Timer_ReturnNumber
+REM XSWI returns: R0=flags, R2=num_timers
+PRINT "Test 1: Timer_ReturnNumber"
+SYS "XTimer_ReturnNumber", 0 TO r0%,r1%,num_timers%;flags%
+PRINT "  Number of timers available: ";num_timers%;" (flags=";flags%;")"
+IF num_timers% <= 0 THEN PRINT "  FAILED: Expected > 0 timers":END
+PRINT "  PASSED"
+PRINT
+
+REM Test 2: Timer_Claim with valid timer
+REM XSWI returns: R0=flags, R2=rate
+PRINT "Test 2: Timer_Claim (valid timer)"
+SYS "XTimer_Claim", 0, 0, 1000, 0 TO r0%,r1%,rate%;flags%
+PRINT "  Timer 0 claimed, rate: ";rate%
+IF rate% = 0 THEN PRINT "  FAILED: Expected non-zero rate":END
+PRINT "  PASSED"
+PRINT
+
+REM Test 3: Timer_Claim with already claimed timer (should fail)
+REM When V flag set, R0 points to error block, error number at R0+0
+PRINT "Test 3: Timer_Claim (already claimed - should fail)"
+test_passed% = FALSE
+SYS "XTimer_Claim", 0, 0, 1000, 0 TO r0%,r1%,rate%;flags%
+IF flags% AND 1 THEN
+  REM Error occurred, R0 points to error block
+  err_num% = r0%!0
+  IF err_num% = 2 THEN
+    test_passed% = TRUE
+  ENDIF
+ENDIF
+IF test_passed% THEN
+  PRINT "  PASSED (error ";err_num%;")"
+ELSE
+  PRINT "  FAILED: Expected error code 2, got ";err_num%
+  END
+ENDIF
+PRINT
+
+REM Test 4: Timer_Claim with out of range timer (should fail)
+PRINT "Test 4: Timer_Claim (out of range - should fail)"
+test_passed% = FALSE
+SYS "XTimer_Claim", 0, 99, 1000, 0 TO r0%,r1%,rate%;flags%
+IF flags% AND 1 THEN
+  err_num% = r0%!0
+  IF err_num% = 1 THEN
+    test_passed% = TRUE
+  ENDIF
+ENDIF
+IF test_passed% THEN
+  PRINT "  PASSED (error ";err_num%;")"
+ELSE
+  PRINT "  FAILED: Expected error code 1, got ";err_num%
+  END
+ENDIF
+PRINT
+
+REM Test 5: Timer_SetRate
+REM XSWI returns: R0=flags, R2=new_rate
+PRINT "Test 5: Timer_SetRate"
+SYS "XTimer_SetRate", 0, 0, 2000000 TO r0%,r1%,new_rate%;flags%
+PRINT "  Timer 0 rate set to: ";new_rate%
+IF new_rate% <> 2000000 THEN PRINT "  FAILED: Expected 2000000":END
+PRINT "  PASSED"
+PRINT
+
+REM Test 6: Timer_Convert
+REM XSWI returns: R0=flags, R2=converted
+PRINT "Test 6: Timer_Convert"
+SYS "XTimer_Convert", 0, 0, 5000 TO r0%,r1%,converted%;flags%
+PRINT "  Converted value: ";converted%
+IF converted% <> 5000 THEN PRINT "  FAILED: Expected 5000":END
+PRINT "  PASSED"
+PRINT
+
+REM Test 7: Timer_Release
+REM XSWI returns: R0=flags
+PRINT "Test 7: Timer_Release"
+SYS "XTimer_Release", 0, 0 TO r0%;flags%
+PRINT "  Timer 0 released"
+PRINT "  PASSED"
+PRINT
+
+REM Test 8: Timer_Release on unclaimed timer (should fail)
+PRINT "Test 8: Timer_Release (not claimed - should fail)"
+test_passed% = FALSE
+SYS "XTimer_Release", 0, 0 TO r0%;flags%
+IF flags% AND 1 THEN
+  err_num% = r0%!0
+  IF err_num% = 3 THEN
+    test_passed% = TRUE
+  ENDIF
+ENDIF
+IF test_passed% THEN
+  PRINT "  PASSED (error ";err_num%;")"
+ELSE
+  PRINT "  FAILED: Expected error code 3, got ";err_num%
+  END
+ENDIF
+PRINT
+
+REM Test 9: Timer_ReturnNumber with invalid flags (should fail)
+PRINT "Test 9: Timer_ReturnNumber (invalid flags - should fail)"
+test_passed% = FALSE
+SYS "XTimer_ReturnNumber", 1 TO r0%;flags%
+IF flags% AND 1 THEN
+  err_num% = r0%!0
+  IF err_num% = ERR_INVALID_FLAGS% THEN
+    test_passed% = TRUE
+  ENDIF
+ENDIF
+IF test_passed% THEN
+  PRINT "  PASSED (error ";err_num%;")"
+ELSE
+  PRINT "  FAILED: Expected error code ";ERR_INVALID_FLAGS%;" got ";err_num%
+  END
+ENDIF
+PRINT
+
+REM Test 10: Claim multiple timers
+PRINT "Test 10: Claim multiple timers"
+all_claimed% = TRUE
+FOR timer% = 0 TO num_timers% - 1
+  SYS "XTimer_Claim", 0, timer%, 1000, 0 TO r0%,r1%,rate%;flags%
+  IF flags% AND 1 OR rate% = 0 THEN
+    all_claimed% = FALSE
+    err_num% = r0%!0
+    PRINT "  FAILED on timer ";timer%;" (err=";err_num%;" rate=";rate%;")"
+  ENDIF
+NEXT
+IF all_claimed% THEN
+  PRINT "  All ";num_timers%;" timers claimed successfully"
+  PRINT "  PASSED"
+ELSE
+  END
+ENDIF
+PRINT
+
+REM Clean up - release all timers
+FOR timer% = 0 TO num_timers% - 1
+  SYS "XTimer_Release", 0, timer% TO r0%;flags%
+NEXT
+
+PRINT "========================="
+PRINT "All tests completed successfully!"

@@ -1,0 +1,182 @@
+/*******************************************************************
+ * File:        hardware
+ * Purpose:     Timer hardware interface stubs
+ * Author:      Charles Ferguson
+ ******************************************************************/
+
+#include "kernel.h"
+
+/* Number of hardware timers available (stub value) */
+#define NUM_TIMERS 4
+
+/* Timer claim flags */
+#define TIMER_CLAIMED 1
+
+/* Timer state structure */
+typedef struct {
+    int claimed;           /* Whether timer is claimed */
+    int rate;              /* Timer rate in Hz (stub) */
+    int value;             /* Current timer value */
+    void (*callback)(int); /* Callback function */
+    int callback_arg;      /* Argument to pass to callback */
+} timer_state_t;
+
+/* Timer state array */
+static timer_state_t timers[NUM_TIMERS];
+
+/* Error block storage */
+static _kernel_oserror err_out_of_range = {1, "Timer number out of range"};
+static _kernel_oserror err_already_claimed = {2, "Timer already claimed"};
+static _kernel_oserror err_not_claimed = {3, "Timer not claimed"};
+
+/***************************************************************************
+ * Function:     hardware_init
+ * Description:  Initialise the hardware timer interface
+ * On exit:      Return NULL for success, or error block
+ **************************************************************************/
+_kernel_oserror *hardware_init(void)
+{
+    int i;
+    for (i = 0; i < NUM_TIMERS; i++) {
+        timers[i].claimed = 0;
+        timers[i].rate = 1000000; /* 1MHz stub rate */
+        timers[i].value = 0;
+        timers[i].callback = (void (*)(int))0;
+        timers[i].callback_arg = 0;
+    }
+    return (_kernel_oserror *)0;
+}
+
+/***************************************************************************
+ * Function:     hardware_final
+ * Description:  Finalise the hardware timer interface
+ * On exit:      Return NULL for success, or error block
+ **************************************************************************/
+_kernel_oserror *hardware_final(void)
+{
+    /* Nothing to do for stub */
+    return (_kernel_oserror *)0;
+}
+
+/***************************************************************************
+ * Function:     hardware_return_number
+ * Description:  Return the number of timers available
+ * On exit:      Return number of timers
+ **************************************************************************/
+int hardware_return_number(void)
+{
+    return NUM_TIMERS;
+}
+
+/***************************************************************************
+ * Function:     hardware_claim
+ * Description:  Claim a timer for use
+ * Parameters:   timer_num = timer number to claim
+ *               flags     = claim flags
+ *               value     = initial timer value
+ *               callback  = callback function
+ *               cb_arg    = argument for callback
+ *               rate_out  = pointer to store timer rate
+ * On exit:      Return NULL for success, or error block
+ **************************************************************************/
+_kernel_oserror *hardware_claim(int timer_num, int flags, int value,
+                                 void (*callback)(int), int cb_arg,
+                                 int *rate_out)
+{
+    if (timer_num < 0 || timer_num >= NUM_TIMERS) {
+        return &err_out_of_range;
+    }
+
+    if (timers[timer_num].claimed) {
+        return &err_already_claimed;
+    }
+
+    timers[timer_num].claimed = TIMER_CLAIMED;
+    timers[timer_num].value = value;
+    timers[timer_num].callback = callback;
+    timers[timer_num].callback_arg = cb_arg;
+
+    /* Return rate in requested format (stub: always return Hz) */
+    if (rate_out) {
+        *rate_out = timers[timer_num].rate;
+    }
+
+    return (_kernel_oserror *)0;
+}
+
+/***************************************************************************
+ * Function:     hardware_release
+ * Description:  Release a claimed timer
+ * Parameters:   timer_num = timer number to release
+ * On exit:      Return NULL for success, or error block
+ **************************************************************************/
+_kernel_oserror *hardware_release(int timer_num)
+{
+    if (timer_num < 0 || timer_num >= NUM_TIMERS) {
+        return &err_out_of_range;
+    }
+
+    if (!timers[timer_num].claimed) {
+        return &err_not_claimed;
+    }
+
+    timers[timer_num].claimed = 0;
+    timers[timer_num].callback = (void (*)(int))0;
+    timers[timer_num].callback_arg = 0;
+
+    return (_kernel_oserror *)0;
+}
+
+/***************************************************************************
+ * Function:     hardware_set_rate
+ * Description:  Set the timer rate
+ * Parameters:   timer_num = timer number
+ *               flags     = rate format flags
+ *               value     = new timer rate value
+ *               rate_out  = pointer to store resulting rate
+ * On exit:      Return NULL for success, or error block
+ **************************************************************************/
+_kernel_oserror *hardware_set_rate(int timer_num, int flags, int value,
+                                    int *rate_out)
+{
+    if (timer_num < 0 || timer_num >= NUM_TIMERS) {
+        return &err_out_of_range;
+    }
+
+    if (!timers[timer_num].claimed) {
+        return &err_not_claimed;
+    }
+
+    /* Stub: just store the value and return it */
+    timers[timer_num].rate = value;
+
+    if (rate_out) {
+        *rate_out = value;
+    }
+
+    return (_kernel_oserror *)0;
+}
+
+/***************************************************************************
+ * Function:     hardware_convert
+ * Description:  Convert a timer value between formats
+ * Parameters:   timer_num = timer number
+ *               flags     = conversion format flags
+ *               value     = value to convert
+ *               result    = pointer to store converted value
+ * On exit:      Return NULL for success, or error block
+ **************************************************************************/
+_kernel_oserror *hardware_convert(int timer_num, int flags, int value,
+                                   int *result)
+{
+    if (timer_num < 0 || timer_num >= NUM_TIMERS) {
+        return &err_out_of_range;
+    }
+
+    /* Stub: return value unchanged */
+    if (result) {
+        *result = value;
+    }
+
+    return (_kernel_oserror *)0;
+}
