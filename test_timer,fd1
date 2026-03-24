@@ -3,12 +3,11 @@ REM Test program for Timer module
 REM This tests all the Timer SWIs
 ON ERROR ERROR EXT ERR, REPORT$ + " at line " + STR$(ERL/10)
 
-REM Error codes (CMHG error base &840)
-ERR_OUT_OF_RANGE% = &840
-ERR_ALREADY_CLAIMED% = &841
-ERR_NOT_CLAIMED% = &842
-ERR_INVALID_FLAGS% = &843
-ERR_RESERVED_FLAGS% = &844
+REM Error codes (CMHG error base &81D8C0)
+ERR_BAD_TIMER% = &81D8C0
+ERR_BAD_FLAGS% = &81D8C1
+ERR_TIMER_IN_USE% = &81D8C8
+ERR_NO_TIMER% = &81D8C9
 
 REM SWI base for Timer module
 Timer_Base% = &58B80
@@ -44,14 +43,14 @@ test_passed% = FALSE
 SYS "XTimer_Claim", 0, 0, 1000, 0 TO r0%,r1%,r2%;flags%
 IF flags% AND 1 THEN
   err_num% = r0%!0
-  IF err_num% = ERR_ALREADY_CLAIMED% THEN
+  IF err_num% = ERR_TIMER_IN_USE% THEN
     test_passed% = TRUE
   ENDIF
 ENDIF
 IF test_passed% THEN
   PRINT "  PASSED (error ";err_num%;")"
 ELSE
-  PRINT "  FAILED: Expected error code ";ERR_ALREADY_CLAIMED%;" got ";err_num%
+  PRINT "  FAILED: Expected error code ";ERR_TIMER_IN_USE%;" got ";err_num%
   END
 ENDIF
 PRINT
@@ -63,14 +62,14 @@ test_passed% = FALSE
 SYS "XTimer_Claim", 0, 99, 1000, 0 TO r0%,r1%,r2%;flags%
 IF flags% AND 1 THEN
   err_num% = r0%!0
-  IF err_num% = ERR_OUT_OF_RANGE% THEN
+  IF err_num% = ERR_BAD_TIMER% THEN
     test_passed% = TRUE
   ENDIF
 ENDIF
 IF test_passed% THEN
   PRINT "  PASSED (error ";err_num%;")"
 ELSE
-  PRINT "  FAILED: Expected error code ";ERR_OUT_OF_RANGE%;" got ";err_num%
+  PRINT "  FAILED: Expected error code ";ERR_BAD_TIMER%;" got ";err_num%
   END
 ENDIF
 PRINT
@@ -111,14 +110,14 @@ test_passed% = FALSE
 SYS "XTimer_Release", 0, 0 TO r0%;flags%
 IF flags% AND 1 THEN
   err_num% = r0%!0
-  IF err_num% = ERR_NOT_CLAIMED% THEN
+  IF err_num% = ERR_NO_TIMER% THEN
     test_passed% = TRUE
   ENDIF
 ENDIF
 IF test_passed% THEN
   PRINT "  PASSED (error ";err_num%;")"
 ELSE
-  PRINT "  FAILED: Expected error code ";ERR_NOT_CLAIMED%;" got ";err_num%
+  PRINT "  FAILED: Expected error code ";ERR_NO_TIMER%;" got ";err_num%
   END
 ENDIF
 PRINT
@@ -130,14 +129,14 @@ test_passed% = FALSE
 SYS "XTimer_ReturnNumber", 1 TO r0%;flags%
 IF flags% AND 1 THEN
   err_num% = r0%!0
-  IF err_num% = ERR_INVALID_FLAGS% THEN
+  IF err_num% = ERR_BAD_FLAGS% THEN
     test_passed% = TRUE
   ENDIF
 ENDIF
 IF test_passed% THEN
   PRINT "  PASSED (error ";err_num%;")"
 ELSE
-  PRINT "  FAILED: Expected error code ";ERR_INVALID_FLAGS%;" got ";err_num%
+  PRINT "  FAILED: Expected error code ";ERR_BAD_FLAGS%;" got ";err_num%
   END
 ENDIF
 PRINT

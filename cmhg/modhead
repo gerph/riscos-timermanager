@@ -8,14 +8,18 @@ help-string: Timer Module_MajorVersion_CMHG
 
 swi-chunk-base-number: &58B80
 
-error-base: &840
+error-base: &81D8C0
 
-error-identifiers: Err_OutOfRange("Timer number out of range"),
-                  Err_AlreadyClaimed("Timer already claimed"),
-                  Err_NotClaimed("Timer not claimed"),
-                  Err_InvalidFlags("Invalid flags"),
-                  Err_ReservedFlags("Reserved flags must be zero"),
-                  Err_UnknownSWI("Unknown SWI")
+error-identifiers: Err_BadTimer("Bad timer number"),
+                  Err_BadFlags("Bad timer flags"),
+                  Err_BadMeasurementInput("Bad timer flags for input measurement type"),
+                  Err_BadMeasurementOutput("Bad timer flags for output measurement type"),
+                  Err_BadUnitsInput("Bad timer flags for input units"),
+                  Err_BadUnitsOutput("Bad timer flags for output units"),
+                  Err_BadTimerRateInput("Bad timer input rate"),
+                  Err_BadTimerRateOutput("Bad timer output rate"),
+                  Err_TimerInUse("Timer in use"),
+                  Err_NoTimer("No timer claimed")
 
 initialisation-code: Mod_Init
 

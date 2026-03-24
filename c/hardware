@@ -81,11 +81,11 @@ _kernel_oserror *hardware_claim(int timer_num, int flags, int value,
                                  int *rate_out)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return Err_OutOfRange;
+        return Err_BadTimer;
     }
 
     if (timers[timer_num].claimed) {
-        return Err_AlreadyClaimed;
+        return Err_TimerInUse;
     }
 
     timers[timer_num].claimed = TIMER_CLAIMED;
@@ -110,11 +110,11 @@ _kernel_oserror *hardware_claim(int timer_num, int flags, int value,
 _kernel_oserror *hardware_release(int timer_num)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return Err_OutOfRange;
+        return Err_BadTimer;
     }
 
     if (!timers[timer_num].claimed) {
-        return Err_NotClaimed;
+        return Err_NoTimer;
     }
 
     timers[timer_num].claimed = 0;
@@ -137,11 +137,11 @@ _kernel_oserror *hardware_set_rate(int timer_num, int flags, int value,
                                     int *rate_out)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return Err_OutOfRange;
+        return Err_BadTimer;
     }
 
     if (!timers[timer_num].claimed) {
-        return Err_NotClaimed;
+        return Err_NoTimer;
     }
 
     /* Stub: just store the value and return it */
@@ -167,7 +167,7 @@ _kernel_oserror *hardware_convert(int timer_num, int flags, int value,
                                    int *result)
 {
     if (timer_num < 0 || timer_num >= NUM_TIMERS) {
-        return Err_OutOfRange;
+        return Err_BadTimer;
     }
 
     /* Stub: return value unchanged */
