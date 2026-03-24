@@ -5,7 +5,7 @@
 #
 # Program specific options:
 #
-COMPONENT  = timer
+COMPONENT  = Timer
 
 # Specifies additional targets for startup
 INITTARGET = inittarget
@@ -49,6 +49,7 @@ include CModule
 
 # Additional dependencies
 $(OZDIR).module: h.modhead
+$(OZDIR).hardware: h.modhead
 
 # Export rules
 # For any files you export with EXPORTS you may need to include an

@@ -2,9 +2,9 @@
 
 #include "VersionNum"
 
-title-string: Timer
+title-string: TimerManager
 
-help-string: Timer Module_MajorVersion_CMHG
+help-string: Timer_Manager Module_MajorVersion_CMHG Prototype version
 
 swi-chunk-base-number: &58B80
 
